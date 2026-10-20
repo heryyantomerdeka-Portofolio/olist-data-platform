@@ -1,0 +1,28 @@
+
+# Base image Jupyter dengan Python dan scientific libraries
+FROM jupyter/pyspark-notebook:spark-3.5.0
+
+USER root
+
+# Library sistem yang umum dibutuhkan
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# Kembali ke user default Jupyter
+USER ${NB_UID}
+
+# Library Python untuk analisis data dan koneksi database
+RUN pip install --no-cache-dir \
+    pandas \
+    numpy \
+    matplotlib \
+    seaborn \
+    sqlalchemy \
+    psycopg2-binary \
+    openpyxl \
+    requests \
+    python-dotenv
+
+WORKDIR /home/jovyan/work

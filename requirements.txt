@@ -1,0 +1,8 @@
+
+boto3
+pandas
+pyarrow
+psycopg[binary]
+python-dotenv
+
+kafka-python>=2.0.2,<4.0.0

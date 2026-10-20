@@ -1,0 +1,15 @@
+{
+  "generated_at": "2026-10-20T03:48:29.950417+00:00",
+  "source_orders": 10,
+  "unique_base_events": 37,
+  "faults": {
+    "base_events": 37,
+    "duplicate_injected": 0,
+    "delayed_injected": 0,
+    "malformed_injected": 0
+  },
+  "topic": "olist.t6-f1-test",
+  "elapsed_seconds": 1.086,
+  "seed": 42,
+  "faults_enabled": false
+}

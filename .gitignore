@@ -1,0 +1,50 @@
+﻿# Secrets and credentials
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Python environment and caches
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Raw data, processed data, and local experiments
+data/raw/
+data/silver/
+data/spark_probe/
+data/spark_probe.py
+data/spark_silver_validation.py
+*.parquet
+*.sqlite
+*.db
+
+# Generated Spark files
+_SUCCESS
+*.crc
+
+# Local configuration and logs
+airflow.cfg
+*.log
+logs/
+
+# Backup files
+*.bak
+*.bak-*
+*.backup.md
+*.pre-cleanup.md
+
+# Generated outputs
+# Keep report and evidence files unless explicitly excluded.
+outputs/*.tmp
+
+# Editor and operating system files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

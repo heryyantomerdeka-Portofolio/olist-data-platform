@@ -1,0 +1,65 @@
+{
+  "stage": "T3",
+  "started_at": "2026-10-17T02:18:16.219646+00:00",
+  "database": "olist",
+  "schema": "raw",
+  "tables": {
+    "category_translation": {
+      "silver_rows": 71,
+      "copied_rows": 71,
+      "database_rows": 71,
+      "status": "PASS"
+    },
+    "customers": {
+      "silver_rows": 99441,
+      "copied_rows": 99441,
+      "database_rows": 99441,
+      "status": "PASS"
+    },
+    "geolocation": {
+      "silver_rows": 1000163,
+      "copied_rows": 1000163,
+      "database_rows": 1000163,
+      "status": "PASS"
+    },
+    "orders": {
+      "silver_rows": 99441,
+      "copied_rows": 99441,
+      "database_rows": 99441,
+      "status": "PASS"
+    },
+    "order_items": {
+      "silver_rows": 112650,
+      "copied_rows": 112650,
+      "database_rows": 112650,
+      "status": "PASS"
+    },
+    "order_payments": {
+      "silver_rows": 103886,
+      "copied_rows": 103886,
+      "database_rows": 103886,
+      "status": "PASS"
+    },
+    "order_reviews": {
+      "silver_rows": 99224,
+      "copied_rows": 99224,
+      "database_rows": 99224,
+      "status": "PASS"
+    },
+    "products": {
+      "silver_rows": 32951,
+      "copied_rows": 32951,
+      "database_rows": 32951,
+      "status": "PASS"
+    },
+    "sellers": {
+      "silver_rows": 3095,
+      "copied_rows": 3095,
+      "database_rows": 3095,
+      "status": "PASS"
+    }
+  },
+  "status": "PASS",
+  "finished_at": "2026-10-17T02:19:30.932577+00:00",
+  "total_rows": 1550922
+}

@@ -1,0 +1,110 @@
+OLIST DATA QUALITY PROFILING
+Source: D:\ADV- Data Engineer\2. Bayuzen\olist-data-platform\data\raw
+===========================================================================
+
+1. COMPLETENESS & DUPLICATES
+
+[olist_customers_dataset.csv]
+Rows: 99,441
+Null values:
+  Tidak ada nilai kosong.
+Duplicate key values (kemunculan tambahan):
+  customer_id: 0
+
+[olist_geolocation_dataset.csv]
+Rows: 1,000,163
+Null values:
+  Tidak ada nilai kosong.
+Duplicate key check: tidak dikonfigurasi.
+
+[olist_orders_dataset.csv]
+Rows: 99,441
+Null values:
+  order_approved_at: 160 (0.16%)
+  order_delivered_carrier_date: 1,783 (1.79%)
+  order_delivered_customer_date: 2,965 (2.98%)
+Duplicate key values (kemunculan tambahan):
+  order_id: 0
+
+[olist_order_items_dataset.csv]
+Rows: 112,650
+Null values:
+  Tidak ada nilai kosong.
+Duplicate key values (kemunculan tambahan):
+  order_id: 13,984
+  order_item_id: 112,629
+
+[olist_order_payments_dataset.csv]
+Rows: 103,886
+Null values:
+  Tidak ada nilai kosong.
+Duplicate key values (kemunculan tambahan):
+  order_id: 4,446
+  payment_sequential: 103,857
+
+[olist_order_reviews_dataset.csv]
+Rows: 99,224
+Null values:
+  review_comment_message: 58,274 (58.73%)
+  review_comment_title: 87,658 (88.34%)
+Duplicate key values (kemunculan tambahan):
+  review_id: 814
+
+[olist_products_dataset.csv]
+Rows: 32,951
+Null values:
+  product_category_name: 610 (1.85%)
+  product_description_lenght: 610 (1.85%)
+  product_height_cm: 2 (0.01%)
+  product_length_cm: 2 (0.01%)
+  product_name_lenght: 610 (1.85%)
+  product_photos_qty: 610 (1.85%)
+  product_weight_g: 2 (0.01%)
+  product_width_cm: 2 (0.01%)
+Duplicate key values (kemunculan tambahan):
+  product_id: 0
+
+[olist_sellers_dataset.csv]
+Rows: 3,095
+Null values:
+  Tidak ada nilai kosong.
+Duplicate key values (kemunculan tambahan):
+  seller_id: 0
+
+[product_category_name_translation.csv]
+Rows: 71
+Null values:
+  Tidak ada nilai kosong.
+Duplicate key check: tidak dikonfigurasi.
+
+
+2. DATE RANGES
+
+[olist_orders_dataset.csv]
+  order_purchase_timestamp: min=2016-09-04 21:15:19 | max=2018-10-17 17:30:18
+  order_approved_at: min=2016-09-15 12:16:38 | max=2018-09-03 17:40:06
+  order_delivered_customer_date: min=2016-10-11 13:46:32 | max=2018-10-17 13:22:46
+  order_estimated_delivery_date: min=2016-09-30 00:00:00 | max=2018-11-12 00:00:00
+
+[olist_order_reviews_dataset.csv]
+  review_creation_date: min=2016-10-02 00:00:00 | max=2018-08-31 00:00:00
+  review_answer_timestamp: min=2016-10-07 18:32:28 | max=2018-10-29 12:27:35
+
+
+3. REFERENTIAL INTEGRITY
+olist_orders_dataset.csv.customer_id -> olist_customers_dataset.csv.customer_id
+  Checked: 99,441 | Unmatched: 0
+olist_order_items_dataset.csv.order_id -> olist_orders_dataset.csv.order_id
+  Checked: 112,650 | Unmatched: 0
+olist_order_items_dataset.csv.product_id -> olist_products_dataset.csv.product_id
+  Checked: 112,650 | Unmatched: 0
+olist_order_items_dataset.csv.seller_id -> olist_sellers_dataset.csv.seller_id
+  Checked: 112,650 | Unmatched: 0
+olist_order_payments_dataset.csv.order_id -> olist_orders_dataset.csv.order_id
+  Checked: 103,886 | Unmatched: 0
+olist_order_reviews_dataset.csv.order_id -> olist_orders_dataset.csv.order_id
+  Checked: 99,224 | Unmatched: 0
+
+===========================================================================
+PROFILING SELESAI
+Catatan: hasil ini diagnosis awal, bukan keputusan untuk menghapus data.

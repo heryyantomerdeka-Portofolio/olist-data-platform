@@ -1,0 +1,16 @@
+check,status,failed_rows,details
+orders: unique ['order_id'],PASS,0,null rows=0; rows participating in duplicates=0
+customers: unique ['customer_id'],PASS,0,null rows=0; rows participating in duplicates=0
+"order_items: unique ['order_id', 'order_item_id']",PASS,0,null rows=0; rows participating in duplicates=0
+"order_payments: unique ['order_id', 'payment_sequential']",PASS,0,null rows=0; rows participating in duplicates=0
+products: unique ['product_id'],PASS,0,null rows=0; rows participating in duplicates=0
+sellers: unique ['seller_id'],PASS,0,null rows=0; rows participating in duplicates=0
+"order_reviews: unique ['review_id', 'order_id']",PASS,0,null rows=0; rows participating in duplicates=0
+category_translation: unique ['product_category_name'],PASS,0,null rows=0; rows participating in duplicates=0
+orders.customer_id -> customers.customer_id,PASS,0,orphan rows=0; null rows=0. Null values dilaporkan terpisah dari orphan.
+order_items.order_id -> orders.order_id,PASS,0,orphan rows=0; null rows=0. Null values dilaporkan terpisah dari orphan.
+order_items.product_id -> products.product_id,PASS,0,orphan rows=0; null rows=0. Null values dilaporkan terpisah dari orphan.
+order_items.seller_id -> sellers.seller_id,PASS,0,orphan rows=0; null rows=0. Null values dilaporkan terpisah dari orphan.
+order_payments.order_id -> orders.order_id,PASS,0,orphan rows=0; null rows=0. Null values dilaporkan terpisah dari orphan.
+order_reviews.order_id -> orders.order_id,PASS,0,orphan rows=0; null rows=0. Null values dilaporkan terpisah dari orphan.
+products.category_translation_coverage,WARNING,13,"unmapped non-null rows=13; missing category rows=610; unmapped categories=['pc_gamer', 'portateis_cozinha_e_preparadores_de_alimentos']. Pertahankan kategori asli; hasil terjemahan boleh NULL."

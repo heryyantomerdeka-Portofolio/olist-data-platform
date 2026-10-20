@@ -1,0 +1,7 @@
+mart,source_rows,exported_rows,columns,status,s3_uri
+mart.customer_rfm,93358,93358,10,PASS,s3://gold/t5_marts/customer_rfm.parquet
+mart.delivery_performance,584,584,10,PASS,s3://gold/t5_marts/delivery_performance.parquet
+mart.monthly_sales,11853,11853,8,PASS,s3://gold/t5_marts/monthly_sales.parquet
+mart.order_reconciliation,99441,99441,10,PASS,s3://gold/t5_marts/order_reconciliation.parquet
+mart.seller_scorecard,3095,3095,11,PASS,s3://gold/t5_marts/seller_scorecard.parquet
+mart.stream_freshness,6,6,12,PASS,s3://gold/t5_marts/stream_freshness.parquet
