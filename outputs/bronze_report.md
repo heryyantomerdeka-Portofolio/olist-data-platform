@@ -1,6 +1,6 @@
 # Bronze Ingestion Report
 
-Generated at (UTC): 2026-10-19T14:39:49.017399+00:00
+Generated at (UTC): 2026-10-20T05:48:40.978889+00:00
 
 | File | Status | Version | Rows | Size (bytes) | SHA-256 | Ingested at (UTC) |
 |---|---|---:|---:|---:|---|---|

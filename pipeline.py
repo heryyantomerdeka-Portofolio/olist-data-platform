@@ -342,6 +342,7 @@ def main():
         return
 
     args = parser.parse_args()
+    extra_args = []
 
 
     if args.stage == "T3":
