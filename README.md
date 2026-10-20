@@ -1,212 +1,253 @@
 ﻿# Olist Data Platform
 
-Platform data e-commerce Olist untuk membangun alur data dari raw ingestion
-hingga analytical data warehouse, data marts, dan Kafka streaming.
+An end-to-end e-commerce data platform built using PostgreSQL, MinIO, Kafka, Python, and Power BI.
 
-## Dokumentasi
+Proyek ini mengolah dataset Brazilian E-Commerce Olist dari raw data ingestion hingga analytical data warehouse, data marts, dan Kafka streaming. Fokus proyek adalah membangun pipeline data yang dapat divalidasi, mendokumentasikan kualitas data, dan menguji perilaku sistem dalam beberapa skenario pemrosesan.
 
-- [Runbook](RUNBOOK.md) — persiapan environment dan panduan eksekusi.
-- [Evaluation Evidence](EVALUATION_EVIDENCE.md) — bukti validasi, metrik,
-  hasil pengujian, serta keterbatasan yang diketahui.
-- [Failure Tests](outputs/failure_tests.md) — catatan pengujian skenario kegagalan.
+## Project Overview
 
-## Status Implementasi
+Platform ini mencakup beberapa lapisan pemrosesan data:
 
-| Tahap | Status berdasarkan bukti yang tersedia |
+- **Bronze:** Menyimpan raw dataset di MinIO beserta manifest dan checksum.
+- **Silver:** Memvalidasi dan menyiapkan data untuk proses berikutnya.
+- **Data Warehouse:** Menyusun data terstruktur untuk kebutuhan analitik.
+- **Data Mart / Gold:** Menyediakan dataset analitik yang siap digunakan.
+- **Kafka Streaming:** Memproses order lifecycle events, menangani duplikasi, dan mencatat pesan tidak valid melalui dead-letter queue (DLQ).
+- **Power BI:** Menyajikan hasil analitik dalam bentuk dashboard.
+
+## Technology Stack
+
+| Technology | Purpose |
 |---|---|
-| T0 — Environment | Entry point belum diimplementasikan |
-| T1 — Bronze ingestion | Artefak Bronze tersedia; entry point belum diimplementasikan |
-| T2 — Silver | Laporan validasi tersedia |
-| T3 — PostgreSQL load / streaming | Load PostgreSQL dan pengujian streaming memiliki bukti terpisah |
-| T4 — Data Warehouse | Laporan validasi tersedia |
-| T5 — Data Mart dan Gold | Enam ekspor mart tervalidasi |
-| T6 — Streaming orchestration | Entry point tersedia; validasi failure scenario masih berlangsung |
+| Python | Data ingestion, validation, and processing |
+| PostgreSQL | Relational storage and analytical data |
+| MinIO | Object storage for raw data |
+| Apache Kafka | Event streaming |
+| SQL | Transformation and analytical modeling |
+| Power BI | Data visualization |
 
-Status tersebut tidak berarti semua tahap sudah dapat dijalankan melalui
-`pipeline.py`. Lihat Evaluation Evidence untuk rincian dan batasan.
+## Documentation
 
-## Artefak Utama
+- [Runbook](RUNBOOK.md) — environment setup and execution instructions.
+- [Evaluation Evidence](EVALUATION_EVIDENCE.md) — validation evidence, metrics, test results, and known limitations.
+- [Failure Tests](outputs/failure_tests.md) — documented failure scenarios and recovery tests.
+- [Data Contract](DATA_CONTRACT.md) — data structure and validation expectations.
 
-- `outputs/olist-data-platform.pbix` — dashboard Power BI.
-- `outputs/gold/export_validation.csv` — hasil validasi ekspor Gold.
-- `outputs/dw_report.md` — laporan Data Warehouse.
-- `outputs/marts_report.md` — laporan Data Mart.
-- `outputs/failure_tests.md` — bukti pengujian skenario kegagalan.
+## Implementation Status
 
----
-## T3 — Kafka Streaming \& Data Quality
+The following status reflects the available implementation and validation evidence. It does not imply that every stage is orchestrated through `pipeline.py`.
 
+| Stage | Scope | Current Status |
+|---|---|---|
+| T0 — Environment | Environment preparation and dataset checks | Supporting artifacts available; pipeline entry point not implemented |
+| T1 — Bronze Ingestion | Raw data ingestion into MinIO | Bronze artifacts and validation report available; standalone ingestion script exists, but pipeline entry point is not implemented |
+| T2 — Silver | Data validation and preparation | Validation report available |
+| T3 — PostgreSQL Load / Streaming | Relational loading and Kafka streaming | Loading and streaming have separate implementation and test evidence |
+| T4 — Data Warehouse | Analytical warehouse modeling | Validation report available |
+| T5 — Data Mart / Gold | Analytical marts and exports | Six mart exports validated |
+| T6 — Streaming Orchestration | Streaming execution and failure scenarios | Supporting scripts and test evidence available; pipeline entry point and failure-scenario validation remain incomplete |
 
+## Data Pipeline
 
-### Architecture
+### T0 — Environment and Data Profiling
 
+This stage covers the local development environment, source dataset preparation, and initial data profiling.
 
+Available supporting artifacts include:
 
-The streaming pipeline publishes Olist order lifecycle events to Kafka and consumes them into PostgreSQL. The consumer validates incoming messages, stores valid events, maintains the latest order status, and routes invalid messages to a dead-letter queue (DLQ).
+- `outputs/profile.md`
+- `outputs/key_validation.csv`
+- `DATA_CONTRACT.md`
 
+The data contract and validation artifacts document the expected data structure and identified quality concerns.
 
+### T1 — Bronze Ingestion
 
-**Components**
+The Bronze layer stores the original Olist CSV files in MinIO to preserve the source data before downstream transformations.
 
-- **Producer:** Generates order lifecycle events from the source orders table.
+The standalone ingestion implementation is available at:
 
-- **Kafka:** Transports events through `olist.order-events`; invalid events are routed to `olist.order-events.dlq`.
+- `scripts/ingest_bronze.py`
+- `outputs/bronze_report.md`
 
-- **Consumer:** Validates events, deduplicates records, detects out-of-order events, and updates the current order state.
+The Bronze artifacts document nine source tables, object metadata, checksums, and version-related information.
 
-- **PostgreSQL:** Stores event history, current order status, DLQ records, and consumer metrics.
+The Bronze layer is intended to provide traceability for the original source data and support downstream validation.
 
+**Implementation note:** The standalone ingestion script and Bronze artifacts are available, but T1 has not yet been integrated as an implemented stage in `pipeline.py`.
 
+### T2 — Silver Data Validation
 
-### PostgreSQL Tables
+The Silver stage validates and prepares the source data for downstream processing.
 
+The available evaluation evidence reports:
 
+- Nine source tables processed.
+- 1,550,922 rows reported across the Silver tables.
+- Zero quarantined rows in the recorded validation run.
+
+These figures represent the documented validation run and should be interpreted within the scope of its recorded checks.
+
+### T3 — PostgreSQL Load and Kafka Streaming
+
+The streaming pipeline publishes order lifecycle events to Kafka and consumes them into PostgreSQL.
+
+The consumer validates incoming messages, handles duplicate event IDs, protects the current order state against stale events, and routes invalid messages to a dead-letter queue.
+
+#### Architecture
+
+1. **Producer:** Generates order lifecycle events from source orders.
+2. **Kafka:** Transports events through `olist.order-events`; invalid messages are routed to `olist.order-events.dlq`.
+3. **Consumer:** Validates messages, deduplicates events, and applies event-ordering rules.
+4. **PostgreSQL:** Stores event history, current order state, DLQ records, and consumer metrics.
+
+#### PostgreSQL Tables
 
 | Table | Purpose |
-
 |---|---|
-
 | `stream.order_events` | Event history with event-ID deduplication |
+| `stream.order_current` | Latest accepted status for each order |
+| `stream.dlq_messages` | Invalid messages and failure details |
+| `stream.consumer_metrics` | Batch-level processing and freshness metrics |
 
-| `stream.order\_current` | Latest accepted status for each order |
+#### Validation Results
 
-| `stream.dlq\_messages` | Invalid messages and their failure details |
+The recorded baseline streaming test used a sample of 100 Olist orders.
 
-| `stream.consumer\_metrics` | Batch-level processing and freshness metrics |
-
-
-
-### Validation Results
-
-
-
-| Test | Result |
-
-|---|---|
-
-| Baseline ingestion | 380 events processed from 100 orders |
-
-| Current order state | 100 orders stored |
-
-| Source reconciliation | 100/100 orders matched the source status |
-
-| Duplicate handling | Duplicate event IDs ignored during replay |
-
-| Out-of-order handling | A late `shipped` event did not overwrite `delivered` |
-
-| Invalid-message handling | 2 invalid messages recorded in the DLQ |
-
-| Test-data cleanup | Temporary out-of-order test records removed |
-
-
-
-### Fault Injection
-
-
-
-A producer run with fault injection enabled used seed `42` and generated:
-
-- 380 base events
-
-- 16 injected duplicates
-
-- 8 delayed events
-
-- 2 malformed messages
-
-
-
-A separate recovery consumer group replayed the Kafka topic. Previously stored event IDs were ignored, while the two invalid messages were retained in the DLQ.
-
-
-
-### Data Integrity
-
-
-
-The current-state table uses event status rank and event timestamp to prevent a lower-ranked or older event from replacing a more advanced accepted status. Event IDs are stored with a uniqueness constraint to make repeated delivery safe at the database layer.
-
-
-
-### Current Verified Database Counts
-
-
-
-| Table | Rows |
-
+| Validation | Result |
 |---|---:|
+| Persisted event history | 380 events |
+| Current order states | 100 orders |
+| Duplicate event IDs in PostgreSQL | 0 |
+| DLQ records | 2 |
+| Order statuses matching source | 100/100 |
+| Mismatched order statuses | 0 |
+| Current orders missing from source | 0 |
 
-| `stream.order_events` | 380 |
+**Recorded database validation result: 7/7 checks passed.**
 
-| `stream.order\_current` | 100 |
+#### Fault Injection and Recovery
 
-| `stream.dlq\_messages` | 2 |
+A seeded producer test using seed `42` generated:
 
+- 380 base events.
+- 16 injected duplicate events.
+- 8 delayed events.
+- 2 malformed messages.
 
+A separate recovery consumer group replayed the Kafka topic. Previously stored event IDs were ignored, and the two invalid messages were retained in PostgreSQL DLQ storage.
 
-**Note:** These counts reflect the baseline dataset after temporary test-order cleanup. Consumer metrics and DLQ records are intentionally retained for audit and demonstration purposes.
+The out-of-order test also confirmed that a late `shipped` event did not overwrite an already accepted `delivered` state.
 
+#### Data Integrity Design
 
+The event-history table uses a unique event ID to prevent duplicate event records at the database layer.
 
-### T3 — Kafka Streaming Validation Results
+The current-state table applies status-rank and event-timestamp rules to prevent stale or lower-ranked events from replacing the accepted state.
 
+**Scope limitation:** These results cover the documented 100-order test sample, not the complete 99,441-order dataset. The tests demonstrate the behavior of the implemented scenarios; they do not establish distributed exactly-once processing between Kafka and PostgreSQL.
 
+### T4 — Data Warehouse
 
-**Overall result: PASS — 7/7 database validation checks**
+The Data Warehouse stage organizes validated data for analytical querying.
 
+Validation evidence is documented in the project evaluation materials and the warehouse report.
 
+See `outputs/dw_report.md` for the recorded validation results.
 
-The streaming pipeline was tested using a sample of 100 Olist orders.
+### T5 — Data Mart and Gold Exports
 
+The Data Mart / Gold stage provides analytical datasets for reporting and visualization.
 
+The available evidence records six validated mart exports.
 
-| Validation | Expected/Actual Result | Status |
+Key artifacts include:
 
-|---|---:|---|
+- `outputs/gold/export_validation.csv`
+- `outputs/marts_report.md`
 
-| Persisted event history | 380 events | PASS |
+These exports provide the basis for downstream analysis and dashboard development.
 
-| Current order states | 100 orders | PASS |
+### T6 — Streaming Orchestration
 
-| Duplicate event IDs in PostgreSQL | 0 | PASS |
+This stage concerns the orchestration and validation of streaming workflows and their failure scenarios.
 
-| DLQ records | 2 | PASS |
+Supporting streaming scripts include:
 
-| Order statuses matching source | 100/100 | PASS |
+- `streaming_producer.py`
+- `streaming_consumer.py`
+- `streaming_common.py`
 
-| Mismatched order statuses | 0 | PASS |
+Failure-scenario evidence is documented in `outputs/failure_tests.md`.
 
-| Current orders missing from source | 0 | PASS |
+**Implementation note:** Supporting scripts and test evidence are available, but the T6 pipeline entry point and complete failure-scenario validation remain unfinished.
 
+## Main Artifacts
 
+| Artifact | Description |
+|---|---|
+| `outputs/olist-data-platform.pbix` | Power BI dashboard |
+| `outputs/bronze_report.md` | Bronze ingestion report |
+| `outputs/profile.md` | Initial data profiling |
+| `outputs/key_validation.csv` | Key validation results |
+| `outputs/dw_report.md` | Data Warehouse validation report |
+| `outputs/marts_report.md` | Data Mart report |
+| `outputs/gold/export_validation.csv` | Gold export validation |
+| `outputs/failure_tests.md` | Failure-scenario test evidence |
 
-**Additional streaming tests**
+## Getting Started
 
+### Prerequisites
 
+- Windows with Docker Desktop.
+- Python 3.10 or newer.
+- Git.
+- The Olist Brazilian E-Commerce dataset.
+- The environment configuration and dependencies described in `RUNBOOK.md`.
 
-- **Duplicate replay:** Reprocessing existing Kafka events did not create additional database event records for already-seen event IDs.
+### 1. Clone the Repository
 
-- **Out-of-order delivery:** A late `shipped` event did not overwrite a previously accepted `delivered` state.
+```bash
+git clone https://github.com/heryyantomerdeka-Portofolio/olist-data-platform.git
+cd olist-data-platform
+```
 
-- **Fault injection:** The producer generated 16 duplicate events, 8 delayed events, and 2 malformed messages in a seeded test run.
+### 2. Configure Environment Variables
 
-- **Dead-letter queue:** Both malformed messages were recorded in PostgreSQL DLQ storage.
+Create a local environment file from the provided template:
 
-- **Source reconciliation:** All 100 tested current-order statuses matched the corresponding source statuses.
+**PowerShell:**
 
+```powershell
+Copy-Item .env.example .env
+```
 
+Edit `.env` and provide the required local credentials and configuration values.
 
-**Data integrity design**
+Do not commit `.env` or publish real credentials. Use `.env.example` as the template for the variables required by the project.
 
+### 3. Install Dependencies and Start Services
 
+Follow the environment setup and dependency instructions in [RUNBOOK.md](RUNBOOK.md).
 
-The event-history table uses a unique event ID to make duplicate deliveries safe at the database layer. The current-state table applies status-rank and event-timestamp rules to prevent stale or lower-ranked events from replacing the accepted state.
+Start Docker services only after configuring the required environment variables.
 
+### 4. Run the Available Pipeline Stages
 
+Review the implementation status and the instructions in `RUNBOOK.md` before running a stage.
 
-**Scope limitation:** The source reconciliation result covers the 100-order test sample, not the full 99,441-order dataset. The test demonstrates the implemented behavior for the tested scenarios; it does not establish distributed exactly-once processing between Kafka and PostgreSQL.
+Not every stage is currently implemented as an executable `pipeline.py` entry point. Do not assume that all stages can be executed end-to-end through a single command.
 
+## Known Limitations
 
+- T0, T1, and T6 are not fully implemented as pipeline entry points.
+- Some stages have separate implementation artifacts and validation evidence rather than complete end-to-end orchestration.
+- Streaming reconciliation covers a 100-order sample rather than the entire source dataset.
+- The streaming tests do not prove distributed exactly-once processing between Kafka and PostgreSQL.
+- Validation results represent the recorded test runs and may not cover every possible data-quality or failure scenario.
 
+## Project Objective
 
+This project demonstrates practical data engineering concepts across raw ingestion, data validation, relational storage, analytical modeling, event streaming, and reporting.
 
+The emphasis is on traceable processing, measurable validation, and transparent documentation of both implemented capabilities and remaining work.
